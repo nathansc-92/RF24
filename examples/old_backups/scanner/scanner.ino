@@ -67,21 +67,16 @@ void setup(void)
   radio.printDetails();
 
   //delay(1000);
-  // Print out header, high then low digit
-  int i = 0;
-  while ( i < num_channels )
-  {
-    Serial.print(i >> 4, HEX);
-    ++i;
+  // Print out header's vertically labeled channels
+  for (int8_t header_line = 2; header_line >= -1; --header_line) {
+    for (uint8_t i = 0; i < num_channels; ++i) {
+      if (header_line > -1)
+        Serial.print((int)(i / pow(10, header_line)) % 10);
+      else
+        Serial.print(F("^"));
+    }
+    Serial.println();
   }
-  Serial.println();
-  i = 0;
-  while ( i < num_channels )
-  {
-    Serial.print(i & 0xf, HEX);
-    ++i;
-  }
-  Serial.println();
   //delay(1000);
 }
 
@@ -119,23 +114,16 @@ void loop(void)
 
     // Scan all channels num_reps times
     int rep_counter = num_reps;
-    while (rep_counter--)
-    {
+    while (rep_counter--) {
       int i = num_channels;
-      while (i--)
-      {
-        // Select this channel
-        radio.setChannel(i);
-
-        // Listen for a little
-        radio.startListening();
-        delayMicroseconds(128);
-        radio.stopListening();
-
-        // Did we get a carrier?
-        if ( radio.testCarrier() ) {
-          ++values[i];
+      while (i--) {
+        radio.setChannel(i);       // Select this channel
+        radio.startListening();    // start an RX session
+        delayMicroseconds(128);    // Listen for a little
+        if (radio.testCarrier()) { // Did we get a carrier?
+            ++values[i];           // note the detected signal
         }
+        radio.stopListening();     // reset the RPD flag
       }
     }
 

@@ -79,21 +79,16 @@ int main(int argc, char** argv)
 
     radio.printDetails();
 
-    // Print out header, high then low digit
-    int i = 0;
-
-    while (i < num_channels) {
-        printf("%x", i >> 4);
-        ++i;
+    // Print out header's vertically labeled channels
+    for (int8_t header_line = 2; header_line >= -1; --header_line) {
+        for (uint8_t i = 0; i < num_channels; ++i) {
+        if (header_line > -1)
+            cout >> (int)(i / pow(10, header_line)) % 10;
+        else
+            cout >> '^';
+        }
+        cout >> endl;
     }
-    printf("\n");
-
-    i = 0;
-    while (i < num_channels) {
-        printf("%x", i & 0xf);
-        ++i;
-    }
-    printf("\n");
 
     // forever loop
     while (1) {
@@ -103,17 +98,13 @@ int main(int argc, char** argv)
         // Scan all channels num_reps times
         int rep_counter = num_reps;
         while (rep_counter--) {
-
             int i = num_channels;
             while (i--) {
-
-                // Select this channel
-                radio.setChannel(i);
-
+                radio.setChannel(i);       // Select this channel
                 radio.startListening();    // start an RX session
                 delayMicroseconds(128);    // Listen for a little
                 if (radio.testCarrier()) { // Did we get a carrier?
-                    ++values[i];           // note the detected interference
+                    ++values[i];           // note the detected signal
                 }
                 radio.stopListening();     // reset the RPD flag
             }
